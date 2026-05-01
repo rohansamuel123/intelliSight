@@ -6,9 +6,9 @@
 
 ## 🚀 Overview
 
-IntelliSight is a gamified mobile application designed to assess and improve cognitive skills in young children through interactive tasks and AI-driven insights.
+IntelliSight is a gamified mobile application designed to assess and enhance cognitive abilities in young children through interactive activities and AI-driven insights.
 
-Instead of relying solely on traditional IQ tests, IntelliSight evaluates children based on real-time performance in engaging games, providing a more holistic understanding of their learning abilities.
+Instead of relying solely on traditional IQ tests, IntelliSight evaluates children based on real-time performance in engaging tasks, offering a more holistic and development-focused understanding of their learning potential.
 
 ---
 
@@ -18,13 +18,13 @@ Early childhood assessments are often:
 
 * Rigid and standardized
 * Not adaptive to individual learning pace
-* Focused on IQ rather than practical cognitive skills
+* Focused on IQ rather than real cognitive skills
 
-This can lead to:
+This leads to:
 
 * Misjudgment of a child’s abilities
 * Increased stress for children and parents
-* Early labeling of children
+* Early and inaccurate labeling
 
 ---
 
@@ -60,7 +60,7 @@ IntelliSight provides:
 
 ## 🧠 System Architecture
 
-```
+```id="f7p2s1"
 Mobile App (React Native)
         ↓
 FastAPI Backend
@@ -89,7 +89,7 @@ AI Reports → App
 ## 🗄️ Database Design
 
 * **Users** – child profiles
-* **Games** – available cognitive tasks
+* **Games** – cognitive tasks
 * **Game Sessions** – gameplay data
 * **Cognitive Scores** – processed skill metrics
 * **Reports** – AI-generated insights
@@ -98,7 +98,7 @@ AI Reports → App
 
 ## 📱 App Flow
 
-```
+```id="6ak9pd"
 Welcome → Profile Setup → Game Selection → Game → Result → Dashboard → AI Report
 ```
 
@@ -108,16 +108,16 @@ Welcome → Profile Setup → Game Selection → Game → Result → Dashboard �
 
 ### 1. Clone Repository
 
-```
-git clone https://github.com/your-repo/IntelliSight.git
-cd IntelliSight
+```id="z9m1tq"
+git clone https://github.com/your-repo/intellisight.git
+cd intellisight
 ```
 
 ---
 
 ### 2. Backend Setup (FastAPI)
 
-```
+```id="v91d2f"
 cd backend
 python -m venv venv
 venv\Scripts\activate   # Windows
@@ -131,7 +131,7 @@ uvicorn main:app --reload
 
 ### 3. Frontend Setup (React Native)
 
-```
+```id="4s2lqp"
 cd frontend
 npm install
 npx expo start
@@ -146,10 +146,11 @@ npx expo start
 * 🏫 School integration dashboard
 * ☁️ Cloud deployment
 
+---
 
 ## 📌 Notes
 
-This project is developed as part of a hackathon to explore alternative, child-friendly methods of cognitive assessment and development.
+This project is developed as part of a hackathon to provide a more inclusive and practical approach to early cognitive assessment and development.
 
 ---
 
