@@ -1,7 +1,11 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
+import os
 
-db_url = "postgresql://postgres:1234@localhost:5432/IntelliSight_db"
+db_url = os.getenv("DATABASE_URL")
+
+if not db_url:
+    raise ValueError("DATABASE_URL is not set")
 
 engine = create_engine(db_url)
 SessionLocal = sessionmaker(bind=engine, autocommit=False, autoflush=False)
