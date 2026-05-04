@@ -13,11 +13,11 @@ class Session(Base):
     played_at = Column(DateTime(timezone=True), server_default=func.now())
     actions = Column(JSON)
     start_time = Column(DateTime(timezone=True), server_default=func.now())
-    end_time = Column(DateTime(timezone=True), server_default=func.now())
-    time_taken = Column(DateTime, default=(start_time - end_time))
+    end_time = Column(DateTime(timezone=True))
+    time_taken = Column(Integer)  # time in seconds
     
-    users = relationship("User", back_populates="game_sessions")
-    games = relationship("Game", back_populates="game_sessions")
+    user = relationship("User", back_populates="game_sessions")
+    game = relationship("Game", back_populates="game_sessions")
 
 
 

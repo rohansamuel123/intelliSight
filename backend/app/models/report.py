@@ -15,5 +15,5 @@ class Report(Base):
     summary=Column(String)
     created_at=Column(DateTime(timezone=True), server_default=func.now())
 
-    users = relationship("users", back_populates="reports")
+    user = relationship("User", back_populates="reports")
 

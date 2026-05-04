@@ -283,6 +283,11 @@ Output:
 - Frontend initialized (Expo Router)
 - Frontend ↔ Backend connection working
 - CORS configured
+- **Database models fully implemented with SQLAlchemy ORM**
+- **All model relationships fixed and validated**
+- **Backend environment configuration (load_dotenv)**
+- **PostgreSQL driver (psycopg2) installed and configured**
+- **Backend server running successfully on port 8000**
 
 ---
 
@@ -298,6 +303,69 @@ Output:
 - Database integration
 - Game logic
 - AI integration
+
+---
+
+## 🔧 Recent Fixes & Changes (May 5, 2026)
+
+### Backend Model Fixes
+
+Fixed critical issues in SQLAlchemy ORM model definitions:
+
+1. **[User Model](../backend/app/models/user.py)** - Updated relationships:
+   - Fixed back_populates references (was "users" → now "user" for singular relationships)
+   - Added missing `games` relationship to `Game` model
+   - Fixed cascade delete relationships
+
+2. **[Game Model](../backend/app/models/game.py)** - Added missing relationship:
+   - Added `game_sessions` relationship back to `Session` model
+   - Corrected back_populates naming
+
+3. **[Session Model](../backend/app/models/session.py)** - Fixed multiple issues:
+   - Removed invalid `time_taken` calculation (was trying to subtract datetime columns)
+   - Changed `time_taken` to Integer column for storing seconds
+   - Fixed relationship references: `users` → `user`, `games` → `game`
+   - Removed invalid `server_default` from `end_time` column
+
+4. **[Report Model](../backend/app/models/report.py)** - Fixed relationship:
+   - Fixed back_populates: `"users"` → `"User"` (capitalization and correct reference)
+   - Changed relationship name: `users` → `user` (singular)
+
+5. **[CognitiveScore Model](../backend/app/models/score.py)** - Fixed relationship:
+   - Fixed back_populates: `"cognitive_scores"` → `"cognitive_score"` (matching User model definition)
+   - Changed relationship name: `users` → `user` (singular)
+
+### Environment & Dependencies
+
+- **[main.py](../backend/main.py)** - Fixed initialization order:
+  - Moved `load_dotenv()` to the very top before any app imports
+  - Ensures `DATABASE_URL` environment variable is loaded before database connection attempt
+
+- **[requirements.txt](../backend/requirements.txt)** - Added missing dependency:
+  - Added `psycopg2-binary==2.9.9` for PostgreSQL connection support
+
+### Database Configuration
+
+- **.env** - Already configured with PostgreSQL connection:
+  - `DATABASE_URL=postgresql://postgres:admin@localhost:5432/intellisight_db`
+  - Ensure PostgreSQL is running locally on default port 5432
+
+### Validation
+
+✅ Backend server starts successfully:
+
+```bash
+uvicorn main:app --host 0.0.0.0 --port 8000
+```
+
+Output:
+
+```
+INFO:     Started server process
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:8000
+```
 
 ---
 
