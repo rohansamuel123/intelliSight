@@ -1,5 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from app.database import engine
+from app.models import Base
 
 
 app = FastAPI()
@@ -16,3 +18,5 @@ app.add_middleware(
 @app.get("/")
 def home():
     return {"message": "Backend running 🚀"}
+
+Base.metadata.create_all(bind=engine)
