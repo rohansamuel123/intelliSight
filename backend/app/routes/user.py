@@ -5,14 +5,14 @@ from app.models.user import User
 from app.schemas.user import UserCreate, UserResponse
 from typing import List
 
-router = APIRouter(prefix="/users", tags=["Users"])
+router=APIRouter(prefix="/users", tags=["Users"])
 
 @router.post("/", response_model=UserResponse)
 def create_user(user: UserCreate, db: Session = Depends(get_db)):
-    existing = db.query(User).filter(User.email == user.email).first()
+    existing=db.query(User).filter(User.email == user.email).first()
     if existing:
         raise HTTPException(status_code=400, detail="Email already registered")
-    new_user = User(**user.dict())
+    new_user=User(**user.dict())
     db.add(new_user)
     db.commit()
     db.refresh(new_user)
