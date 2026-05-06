@@ -521,6 +521,25 @@ This file contains:
 
 ---
 
+## 📅 Current Development Status (Google Auth)
+
+**Current Status:**
+- **Google Authentication** is fully implemented and works perfectly on the **PC Web Browser**. The frontend correctly gets the `id_token` and the Python backend correctly verifies it, creates a user, and issues a JWT.
+- **Backend**: Running successfully with Uvicorn. The `POST /users/google` endpoint is active and working.
+- **Frontend**: `index.tsx` is configured with `expo-auth-session` and the "Continue with Google" button. 
+
+**The Blockers (Phone Testing):**
+- Testing Google Login on the actual phone via Expo Go currently fails because Google strictly blocks local IP addresses and custom app schemes (`exp://`).
+- Normally bypassed by an "Android Client ID", but the generic Expo Go fingerprint is claimed globally by someone else.
+
+**Next Steps (Tomorrow):**
+To get Google Login working on the phone, implement the **Expo Proxy** method:
+1. **Create an Expo Account**: Run `npx expo register` to create a free account, then run `npx expo login` in the terminal.
+2. **Update Google Cloud**: Go to Google Cloud Console, edit the **Web Client ID**, and add `https://auth.expo.io` to the "Authorized redirect URIs" list.
+3. **Update Code**: Update `index.tsx` to use the proxy by adding `redirectUri: AuthSession.makeRedirectUri({ useProxy: true })` to the Google Auth hook.
+
+---
+
 ## 🚀 Final Vision
 
 Create a platform where:

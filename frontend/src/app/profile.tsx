@@ -3,6 +3,7 @@ import { View, Text, TextInput, StyleSheet, KeyboardAvoidingView, Platform, Touc
 import { useRouter } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Button from '../components/Button';
+import API from '../services/api';
 
 export default function Profile() {
   const router = useRouter();
@@ -17,22 +18,39 @@ export default function Profile() {
     }
     
     try {
+      // 1. Send data to backend API
+      const response = await API.post('/users/register', {
+        name,
+        email,
+        password,
+        age: 30, // Default for parent
+        gender: "Other" // Default for parent
+      });
+
+      const { access_token, user } = response.data;
+      
+      // 2. Save token and current user session
+      await AsyncStorage.setItem('token', access_token);
+      await AsyncStorage.setItem('currentUser', JSON.stringify(user));
+
+      // 3. Keep local fallback for Quick Login UI
       const existingAccountsStr = await AsyncStorage.getItem('accounts');
       const accounts = existingAccountsStr ? JSON.parse(existingAccountsStr) : [];
+      const newAccount = { id: user.user_id.toString(), name, email, password };
       
-      const newAccount = { id: Date.now().toString(), name, email, password };
-      accounts.push(newAccount);
-      
-      await AsyncStorage.setItem('accounts', JSON.stringify(accounts));
-      // Log the user in immediately
-      await AsyncStorage.setItem('currentUser', JSON.stringify(newAccount));
+      // Prevent duplicates in Quick Login
+      if (!accounts.some((a: any) => a.email === email)) {
+        accounts.push(newAccount);
+        await AsyncStorage.setItem('accounts', JSON.stringify(accounts));
+      }
       
       Alert.alert("Success", "Profile created successfully!", [
-        { text: "OK", onPress: () => router.replace('/dashboard') }
+        { text: "OK", onPress: () => router.replace('/dashboard' as any) }
       ]);
-    } catch (e) {
+    } catch (e: any) {
       console.error(e);
-      Alert.alert("Error", "Could not save profile.");
+      const errMsg = e.response?.data?.detail || "Could not save profile.";
+      Alert.alert("Error", errMsg);
     }
   };
 

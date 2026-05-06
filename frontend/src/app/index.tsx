@@ -3,6 +3,11 @@ import { View, Text, TextInput, StyleSheet, KeyboardAvoidingView, Platform, Touc
 import { useRouter } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Button from '../components/Button';
+import API from '../services/api';
+import * as WebBrowser from 'expo-web-browser';
+import * as Google from 'expo-auth-session/providers/google';
+
+WebBrowser.maybeCompleteAuthSession();
 
 export default function Login() {
   const router = useRouter();
@@ -10,12 +15,42 @@ export default function Login() {
   const [password, setPassword] = useState('');
   const [savedAccounts, setSavedAccounts] = useState<any[]>([]);
 
+  // Google Auth Setup
+  const [request, response, promptAsync] = Google.useIdTokenAuthRequest({
+    androidClientId: process.env.EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID || 'your-android-client-id',
+    iosClientId: process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID || 'your-ios-client-id',
+    webClientId: process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID || 'your-web-client-id',
+  });
+
+  useEffect(() => {
+    const handleGoogleResponse = async () => {
+      if (response?.type === 'success') {
+        const { id_token } = response.params;
+        if (id_token) {
+          try {
+            const res = await API.post('/users/google', { id_token });
+            const { access_token, user } = res.data;
+
+            await AsyncStorage.setItem('token', access_token);
+            await AsyncStorage.setItem('currentUser', JSON.stringify(user));
+            
+            router.replace('/dashboard' as any);
+          } catch (e: any) {
+            console.error(e);
+            Alert.alert("Google Login Failed", "Could not authenticate with backend.");
+          }
+        }
+      }
+    };
+    handleGoogleResponse();
+  }, [response]);
+
   useEffect(() => {
     const checkAuth = async () => {
       try {
         const userStr = await AsyncStorage.getItem('currentUser');
         if (userStr) {
-          router.replace('/dashboard');
+          router.replace('/dashboard' as any);
         }
         
         const accountsStr = await AsyncStorage.getItem('accounts');
@@ -31,12 +66,26 @@ export default function Login() {
 
   const handleLogin = async () => {
     if (email && password) {
-      const account = savedAccounts.find(a => a.email.toLowerCase() === email.toLowerCase() && a.password === password);
-      if (account) {
-        await AsyncStorage.setItem('currentUser', JSON.stringify(account));
-        router.replace('/dashboard');
-      } else {
-        Alert.alert("Error", "Invalid email or password. Please try again or create an account.");
+      try {
+        const response = await API.post('/users/login', { email, password });
+        const { access_token, user } = response.data;
+
+        await AsyncStorage.setItem('token', access_token);
+        await AsyncStorage.setItem('currentUser', JSON.stringify(user));
+
+        // Save to Quick Login if not exists
+        const existingAccountsStr = await AsyncStorage.getItem('accounts');
+        const accounts = existingAccountsStr ? JSON.parse(existingAccountsStr) : [];
+        if (!accounts.some((a: any) => a.email.toLowerCase() === email.toLowerCase())) {
+          accounts.push({ id: user.user_id.toString(), name: user.name, email, password });
+          await AsyncStorage.setItem('accounts', JSON.stringify(accounts));
+        }
+
+        router.replace('/dashboard' as any);
+      } catch (e: any) {
+        console.error(e);
+        const errMsg = e.response?.data?.detail || "Invalid email or password.";
+        Alert.alert("Error", errMsg);
       }
     } else {
       Alert.alert("Error", "Please enter both email and password.");
@@ -44,8 +93,18 @@ export default function Login() {
   };
 
   const handleQuickLogin = async (account: any) => {
-    await AsyncStorage.setItem('currentUser', JSON.stringify(account));
-    router.replace('/dashboard');
+    try {
+      const response = await API.post('/users/login', { email: account.email, password: account.password });
+      const { access_token, user } = response.data;
+
+      await AsyncStorage.setItem('token', access_token);
+      await AsyncStorage.setItem('currentUser', JSON.stringify(user));
+      
+      router.replace('/dashboard' as any);
+    } catch (e: any) {
+      console.error(e);
+      Alert.alert("Session Expired", "Please login manually.");
+    }
   };
 
   return (
@@ -136,9 +195,18 @@ export default function Login() {
                 
                 <View style={{ marginTop: savedAccounts.length > 0 ? 16 : 0 }}>
                   <Button 
+                    title="Continue with Google" 
+                    variant="secondary" 
+                    onPress={() => promptAsync()} 
+                    disabled={!request}
+                  />
+                </View>
+                
+                <View style={{ marginTop: 16 }}>
+                  <Button 
                     title="Create Profile" 
                     variant="secondary" 
-                    onPress={() => router.push('/profile')} 
+                    onPress={() => router.push('/profile' as any)} 
                   />
                 </View>
               </View>

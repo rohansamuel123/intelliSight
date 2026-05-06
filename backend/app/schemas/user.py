@@ -33,6 +33,9 @@ class LoginRequest(BaseModel):
     email: EmailStr
     password: str
 
+class GoogleAuthRequest(BaseModel):
+    id_token: str
+
 
 # ── JWT response after login / register ───────────────────────────────────────
 
