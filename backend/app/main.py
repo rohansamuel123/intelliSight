@@ -7,6 +7,7 @@ from app.database import engine
 from app import models
 from app.routes import user
 
+
 models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
@@ -20,6 +21,7 @@ app.add_middleware(
 )
 
 app.include_router(user.router)
+
 
 @app.get("/")
 def home():
