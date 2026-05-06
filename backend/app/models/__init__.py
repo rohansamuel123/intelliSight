@@ -5,6 +5,7 @@ from .game import Game
 from .session import Session
 from .report import Report
 from .score import CognitiveScore
+from .child import Child
 
 __all__ = [
     "Base",
@@ -13,4 +14,5 @@ __all__ = [
     "Session",
     "Report",
     "CognitiveScore",
-]
+    "Child",
+]

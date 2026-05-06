@@ -102,6 +102,7 @@ frontend/
 ```
 
 #### 🧩 Frontend File Responsibilities:
+
 - **`app/index.tsx`**: The main entry point. It checks for a persistent login session on mount. If logged in, redirects to `/dashboard`. If not, it reads saved profiles from `AsyncStorage` and displays large "Quick Login" avatars. It also handles manual email/password login.
 - **`app/profile.tsx`**: Allows users to create a parent account (Name, Email, Password). Upon creation, the account is stored locally via `AsyncStorage` inside an `accounts` array, and the user is instantly logged in (saving to `currentUser` key) and routed to `/dashboard`.
 - **`app/dashboard.tsx`**: The landing screen for parents. It reads the `currentUser` from `AsyncStorage` to display a personalized greeting. Includes a "Logout" mechanism that clears the session and routes back to `/`.
@@ -142,7 +143,8 @@ backend/
 ## 🔄 System Flow (End-to-End)
 
 ### 1. Account & Session Flow
-- **App Launch:** `index.tsx` checks `AsyncStorage` for `currentUser`. 
+
+- **App Launch:** `index.tsx` checks `AsyncStorage` for `currentUser`.
 - **If authenticated:** Immediately route to `dashboard.tsx`.
 - **If unauthenticated:**
   - Display "Quick Access" profiles (loaded from `accounts` array in `AsyncStorage`).
@@ -151,10 +153,13 @@ backend/
   - OR User taps "Create Profile" -> navigates to `profile.tsx` -> saves new account to `AsyncStorage` -> logs in.
 
 ### 2. Gameplay Interaction (Planned)
+
 - Child plays game in mobile app
 
 ### 3. Data Capture (Planned)
+
 Frontend sends:
+
 ```json
 {
   "user_id": "uuid",
@@ -166,11 +171,14 @@ Frontend sends:
 ```
 
 ### 4. Backend Processing
+
 - Store raw session in DB
 - Compute basic metrics
 
 ### 5. Cognitive Scoring
+
 Derived metrics:
+
 - memory_score
 - attention_score
 - logic_score
@@ -178,13 +186,16 @@ Derived metrics:
 - processing_speed
 
 ### 6. AI Processing (OpenClaw)
+
 Input:
+
 - aggregated scores
 - gameplay history
-Output:
+  Output:
 - strengths, weaknesses, recommendations, readiness level
 
 ### 7. Output
+
 - Dashboard updated
 - Report displayed
 
@@ -192,14 +203,28 @@ Output:
 
 ## 🗄️ Database Schema (Final Plan)
 
-### USERS
+### USERS (Parents)
+
 - id (PK)
 - name
 - age
+- gender
 - email
+- password (hashed)
+- created_at
+
+### CHILDREN
+
+- child_id (PK)
+- parent_id (FK to USERS)
+- name
+- age
+- gender
+- avatar
 - created_at
 
 ### GAMES
+
 - id (PK)
 - name
 - type (memory, logic, attention)
@@ -207,6 +232,7 @@ Output:
 - description
 
 ### GAME_SESSIONS
+
 - id (PK)
 - user_id (FK)
 - game_id (FK)
@@ -217,6 +243,7 @@ Output:
 - played_at
 
 ### COGNITIVE_SCORES
+
 - id (PK)
 - user_id (FK)
 - memory_score
@@ -227,6 +254,7 @@ Output:
 - updated_at
 
 ### REPORTS
+
 - id (PK)
 - user_id (FK)
 - summary
@@ -240,17 +268,31 @@ Output:
 
 ## 🔌 API Design (Planned)
 
-### User
-- POST /users → create user
-- GET /users → list users
+### Auth & User (Parent)
+
+- POST /users/register → register a new parent account (returns JWT)
+- POST /users/login → authenticate and receive JWT
+- GET /users/me → get current authenticated parent profile
+- GET /users → list all parents (admin)
+
+### Children
+
+- POST /children → add a child profile to the authenticated parent
+- GET /children → list all children for the authenticated parent
+- GET /children/{id} → get specific child
+- PUT /children/{id} → update child profile
+- DELETE /children/{id} → remove child profile
 
 ### Game
+
 - GET /games → fetch available games
 
 ### Session
+
 - POST /session → submit gameplay
 
 ### Report
+
 - GET /report/{user_id} → fetch AI report
 
 ---
@@ -266,10 +308,12 @@ Output:
 - Backend initialized
 - Basic FastAPI running
 - Frontend initialized (Expo Router)
-- **Database models fully implemented with SQLAlchemy ORM**
+- **Database models fully implemented with SQLAlchemy ORM** (Users, Children, Games, Sessions, Scores, Reports)
 - **All model relationships fixed and validated**
 - **Backend environment configuration (load_dotenv)**
 - **PostgreSQL driver (psycopg2) installed and configured**
+- **Backend Authentication built (bcrypt hashing, JWT tokens, protected routes)**
+- **Child profile management endpoints added**
 - **Frontend local session management (AsyncStorage) implemented**
 - **Frontend profile creation flow built**
 - **Frontend 'Quick Access' authentication built**
@@ -277,9 +321,9 @@ Output:
 
 ### 🚧 In Progress
 
-- API structuring
-- First real endpoints
-- Connecting frontend local accounts with backend Postgres accounts
+- Connecting frontend local accounts with backend Postgres accounts (wiring up Axios calls)
+- Scoring Engine logic (`score_service.py`)
+- Session validation logic (`session_service.py`)
 
 ### ❌ Not Started
 
@@ -294,7 +338,7 @@ Output:
 - Use Expo Tunnel OR same WiFi
 - Backend must run with:
   ```bash
-  uvicorn main:app --host 0.0.0.0 --port 8000
+  uvicorn app.main:app --host 0.0.0.0 --port 8000
   ```
 - API baseURL:
   - localhost for web
@@ -305,15 +349,19 @@ Output:
 ## 🧠 AI Integration Plan
 
 ### Role of AI
+
 - NOT real-time gameplay
 - ONLY post-analysis
 
 ### Input to AI
+
 - Cognitive scores
 - Session history
 
 ### Output
+
 Structured JSON:
+
 ```json
 {
   "strengths": "...",
@@ -328,11 +376,13 @@ Structured JSON:
 ## 🧩 Game Design Approach
 
 Games should:
+
 - Be simple and visual
 - Require minimal reading
 - Capture interaction patterns
 
 Examples:
+
 - Memory sequence
 - Pattern matching
 - Follow instructions
@@ -351,6 +401,7 @@ Examples:
 ## 🧾 Usage for AI Tools
 
 This file contains:
+
 - Full architecture
 - Data flow
 - File responsibilities
@@ -372,4 +423,5 @@ This file contains:
 ## 🚀 Final Vision
 
 Create a platform where:
+
 > “Every child is understood based on how they think, not judged by a single number.”
