@@ -9,6 +9,7 @@ from app.routes import user
 from app.routes import game
 from app.routes import score
 from app.routes import session
+from app.routes import report 
 
 Base.metadata.create_all(bind=engine)
 
@@ -26,6 +27,7 @@ app.include_router(user.router)
 app.include_router(game.router)
 app.include_router(score.router)
 app.include_router(session.router)
+app.include_router(report.router)
 
 @app.get("/")
 def home():
