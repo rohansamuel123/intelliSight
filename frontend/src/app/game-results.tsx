@@ -1,68 +1,88 @@
 import React, { useEffect } from 'react';
-import { View, Text, StyleSheet, SafeAreaView } from 'react-native';
+import { View, Text, StyleSheet, SafeAreaView, Pressable } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
+import { getGameById, DOMAIN_LABELS, DOMAIN_COLORS, GAMES } from '../data/gameRegistry';
+import ScoreRing from '../components/ScoreRing';
 import Button from '../components/Button';
 
 export default function GameResults() {
   const router = useRouter();
-  const { gameType, score, time, accuracy } = useLocalSearchParams();
+  const { gameId, score, stars } = useLocalSearchParams();
 
-  // In a real implementation, we would send these results to the backend here.
-  useEffect(() => {
-    console.log('Sending to backend:', { gameType, score, time, accuracy });
-    // TODO: POST /session
-  }, []);
+  const game = getGameById(gameId as string);
+  const numScore = Number(score) || 0;
+  const numStars = Number(stars) || 1;
 
-  const getGameName = () => {
-    if (gameType === 'memory') return 'Memory Pattern';
-    if (gameType === 'reaction') return 'Reaction Dash';
-    return 'Game';
+  const getMessage = () => {
+    if (numStars === 3) return { text: 'Outstanding! 🏆', sub: 'You mastered this challenge!' };
+    if (numStars === 2) return { text: 'Great Job! 🌟', sub: 'Keep going, you\'re doing well!' };
+    return { text: 'Good Try! 💪', sub: 'Practice makes perfect!' };
   };
 
-  const getPerformanceMessage = () => {
-    const s = Number(score);
-    if (gameType === 'memory') {
-      if (s > 6) return "Incredible Memory! 🧠";
-      if (s > 3) return "Great Job! 🌟";
-      return "Good Try! Keep practicing! 💪";
-    } else {
-      const t = Number(time);
-      if (t < 5) return "Lightning Fast! ⚡";
-      if (t < 10) return "Great Speed! 🏃";
-      return "Good focus! 🎯";
-    }
-  };
+  const msg = getMessage();
+
+  // Find next game
+  const currentOrder = game?.order || 1;
+  const nextGame = GAMES.find(g => g.order === currentOrder + 1);
 
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.container}>
-        <Text style={styles.title}>Results</Text>
-        <Text style={styles.subtitle}>{getGameName()}</Text>
 
-        <View style={styles.card}>
-          <Text style={styles.message}>{getPerformanceMessage()}</Text>
-          
-          <View style={styles.statRow}>
-            <Text style={styles.statLabel}>Score/Level:</Text>
-            <Text style={styles.statValue}>{score}</Text>
-          </View>
-          
-          <View style={styles.statRow}>
-            <Text style={styles.statLabel}>Time Taken:</Text>
-            <Text style={styles.statValue}>{Number(time).toFixed(1)}s</Text>
-          </View>
-          
-          <View style={styles.statRow}>
-            <Text style={styles.statLabel}>Accuracy:</Text>
-            <Text style={styles.statValue}>{Number(accuracy).toFixed(0)}%</Text>
-          </View>
+        {/* Stars */}
+        <View style={styles.starsRow}>
+          {[1, 2, 3].map(i => (
+            <Text key={i} style={[styles.star, i <= numStars ? styles.starEarned : styles.starEmpty]}>
+              ★
+            </Text>
+          ))}
         </View>
 
-        <Button 
-          title="Back to Dashboard" 
-          onPress={() => router.replace('/dashboard')} 
-          variant="primary" 
-        />
+        {/* Message */}
+        <Text style={styles.message}>{msg.text}</Text>
+        <Text style={styles.subMessage}>{msg.sub}</Text>
+
+        {/* Score Ring */}
+        <View style={styles.ringContainer}>
+          <ScoreRing
+            score={numScore}
+            size={160}
+            color={game ? DOMAIN_COLORS[game.domain] : '#FF7A00'}
+            label="Score"
+          />
+        </View>
+
+        {/* Game Info */}
+        {game && (
+          <View style={styles.gameInfoCard}>
+            <Text style={styles.gameName}>{game.emoji} {game.name}</Text>
+            <View style={[styles.domainBadge, { backgroundColor: DOMAIN_COLORS[game.domain] + '20' }]}>
+              <Text style={[styles.domainText, { color: DOMAIN_COLORS[game.domain] }]}>
+                {DOMAIN_LABELS[game.domain]}
+              </Text>
+            </View>
+          </View>
+        )}
+
+        {/* Actions */}
+        <View style={styles.actions}>
+          <Button
+            title="Play Again"
+            onPress={() => router.replace(game?.route as any || '/dashboard')}
+            variant="outline"
+          />
+          {nextGame && (
+            <Button
+              title={`Next: ${nextGame.name} →`}
+              onPress={() => router.replace(nextGame.route as any)}
+              variant="primary"
+            />
+          )}
+          <Pressable onPress={() => router.replace('/dashboard')} style={styles.dashboardLink}>
+            <Text style={styles.dashboardLinkText}>Back to Dashboard</Text>
+          </Pressable>
+        </View>
+
       </View>
     </SafeAreaView>
   );
@@ -71,38 +91,34 @@ export default function GameResults() {
 const styles = StyleSheet.create({
   safeArea: { flex: 1, backgroundColor: '#FFF9F0' },
   container: { flex: 1, padding: 24, justifyContent: 'center', alignItems: 'center' },
-  title: { fontSize: 36, color: '#FF7A00', fontWeight: '900', marginBottom: 8 },
-  subtitle: { fontSize: 20, color: '#8B5A2B', fontWeight: 'bold', marginBottom: 32 },
-  card: {
-    backgroundColor: '#FFFFFF',
-    padding: 32,
-    borderRadius: 24,
-    borderWidth: 2,
-    borderColor: '#FFE0B2',
-    marginBottom: 32,
-    width: '100%',
-    alignItems: 'center',
-    shadowColor: '#FF7A00',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 4,
-  },
-  message: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#4CAF50',
-    marginBottom: 24,
-    textAlign: 'center'
-  },
-  statRow: {
+
+  starsRow: { flexDirection: 'row', marginBottom: 16, gap: 8 },
+  star: { fontSize: 48 },
+  starEarned: { color: '#FFB300' },
+  starEmpty: { color: '#E0D5C8' },
+
+  message: { fontSize: 32, fontWeight: '900', color: '#2D1B0E', textAlign: 'center' },
+  subMessage: { fontSize: 16, color: '#8B7355', fontWeight: '500', marginTop: 8, marginBottom: 24, textAlign: 'center' },
+
+  ringContainer: { marginBottom: 24 },
+
+  gameInfoCard: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    width: '100%',
+    alignItems: 'center',
+    gap: 12,
+    backgroundColor: '#FFF',
+    paddingHorizontal: 20,
     paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: '#F0F0F0',
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: '#F0E6D9',
+    marginBottom: 32,
   },
-  statLabel: { fontSize: 18, color: '#666', fontWeight: '500' },
-  statValue: { fontSize: 18, color: '#333', fontWeight: 'bold' }
+  gameName: { fontSize: 18, fontWeight: '800', color: '#2D1B0E' },
+  domainBadge: { paddingHorizontal: 10, paddingVertical: 4, borderRadius: 8 },
+  domainText: { fontSize: 12, fontWeight: '800', textTransform: 'uppercase' },
+
+  actions: { width: '100%' },
+  dashboardLink: { alignSelf: 'center', marginTop: 8, padding: 12 },
+  dashboardLinkText: { fontSize: 15, fontWeight: '700', color: '#8B7355' },
 });
