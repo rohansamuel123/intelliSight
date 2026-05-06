@@ -31,8 +31,20 @@ export default function Dashboard() {
         <Text style={styles.name}>{userName || 'Parent'}</Text>
         
         <View style={styles.card}>
-          <Text style={styles.cardTitle}>IntelliSight Dashboard</Text>
-          <Text style={styles.cardText}>This is your parent dashboard where you can manage settings.</Text>
+          <Text style={styles.cardTitle}>Play & Learn</Text>
+          <Text style={styles.cardText}>Start a game to build your cognitive profile.</Text>
+          <View style={{ height: 16 }} />
+          <Button 
+            title="🎮 Play Memory Game" 
+            onPress={() => router.push('/game-memory')} 
+            variant="primary" 
+          />
+          <View style={{ height: 12 }} />
+          <Button 
+            title="⚡ Play Reaction Match" 
+            onPress={() => router.push('/game-reaction')} 
+            variant="primary" 
+          />
         </View>
 
         <Button title="Logout" onPress={handleLogout} variant="outline" />
